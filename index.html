@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Exp 6: CI/CD Pipeline Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --secondary: #475569;
+            --bg-page: #f8fafc;
+            --bg-surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --code-bg: #0f172a;
+            --code-text: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout */
+        .navbar {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar h1 { font-size: 1.25rem; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Typography */
+        h1, h2, h3 { color: var(--text-main); letter-spacing: -0.025em; }
+        h2 { font-size: 1.875rem; font-weight: 700; margin: 3rem 0 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
+        h3 { font-size: 1.25rem; font-weight: 600; margin: 2rem 0 1rem; color: var(--primary); }
+        p { margin-bottom: 1.25rem; color: var(--secondary); font-size: 1.05rem; }
+        
+        /* Components */
+        .card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .badge.success { background-color: var(--success-light); color: var(--success); }
+
+        /* Callouts */
+        .callout {
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+            border-left: 4px solid;
+        }
+        
+        .callout-info { background-color: var(--primary-light); border-color: var(--primary); }
+        .callout-info p { color: #1e3a8a; margin: 0; }
+        
+        /* Terminal & Code */
+        .terminal {
+            background-color: var(--code-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .terminal-header {
+            background-color: #1e293b;
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot.red { background-color: #ef4444; }
+        .dot.yellow { background-color: #f59e0b; }
+        .dot.green { background-color: #10b981; }
+
+        pre {
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--code-text);
+            margin: 0;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+            background-color: var(--border);
+            color: #b91c1c;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        pre code { background-color: transparent; padding: 0; color: inherit; }
+        
+        .cmd-prompt { color: #10b981; font-weight: 600; user-select: none; }
+        .cmd-path { color: #3b82f6; }
+        .cmd-output { color: #94a3b8; }
+
+        /* Lists */
+        ol.steps { counter-reset: step; list-style-type: none; padding: 0; }
+        ol.steps > li {
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 2rem;
+        }
+        ol.steps > li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        ul.theory-list li {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+        
+        ul.theory-list strong {
+            color: var(--text-main);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>DevOps Lab Documentation</h1>
+        <span class="badge success">Experiment No. 6</span>
+    </nav>
+
+    <div class="container">
+        
+        <header style="text-align: center; margin-bottom: 4rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 800; color: #0f172a; margin-bottom: 1rem;">Continuous Integration & Deployment Guide</h1>
+            <p style="font-size: 1.25rem; max-width: 700px; margin: 0 auto;">A comprehensive manual for setting up, collaborating on, and automating the <code>exp6-devops</code> pipeline utilizing GitHub and Jenkins.</p>
+        </header>
+
+        <!-- SECTION 1: CI/CD & Jenkins Theory -->
+        <h2>1. Understanding CI/CD & Jenkins Core Concepts</h2>
+        <p>Before diving into the codebase, it is essential to understand the foundational concepts of CI/CD and the terminology used within the Jenkins ecosystem.</p>
+        
+        <div class="card">
+            <h3>What is CI/CD?</h3>
+            <p><strong>Continuous Integration (CI)</strong> is the practice of automating the integration of code changes from multiple contributors into a single software project. <strong>Continuous Deployment (CD)</strong> goes one step further by automatically deploying those integrated, tested changes to a production environment (such as our live web directory).</p>
+
+            <h3>Jenkins Architecture & Terminology</h3>
+            <p>To write and understand a Jenkins pipeline, you must be familiar with its building blocks:</p>
+            <ul class="theory-list" style="margin-left: 1.5rem;">
+                <li><strong>Pipeline:</strong> A user-defined model of a CI/CD process. In our lab, this is written as code in a file named <code>Jenkinsfile</code> using Jenkins Declarative Pipeline syntax.</li>
+                <li><strong>Node / Agent:</strong> A machine or container that connects to the Jenkins master to execute the pipeline tasks. Using <code>agent any</code> instructs Jenkins to allocate any available, capable node to run the build.</li>
+                <li><strong>Stage:</strong> A logical block in the pipeline representing a major milestone (e.g., "Checkout", "Validate", "Deploy"). Stages allow us to visualize the pipeline's progress and isolate exactly where a failure occurs.</li>
+                <li><strong>Step:</strong> A single, specific task executed within a stage. For example, running a Windows batch command (<code>bat</code>), printing text (<code>echo</code>), or pulling from a Git repository.</li>
+                <li><strong>Workspace:</strong> A temporary, isolated directory on the agent node where Jenkins downloads the source code and executes the pipeline steps.</li>
+            </ul>
+        </div>
+
+        <!-- SECTION 2: Architecture & Pipeline Logic -->
+        <h2>2. Architecture & Pipeline Logic</h2>
+        <p>This project utilizes a fully automated CI/CD pipeline. Every time a collaborator pushes code to the central GitHub repository, Jenkins detects the change, validates the codebase in its workspace, and deploys the website to a local directory (<code>C:\jenkins_site\</code>).</p>
+        
+        <div class="card">
+            <h3>Understanding our Jenkinsfile</h3>
+            <p>The entire automation process is defined as code. Below is the exact <code>Jenkinsfile</code> driving our lab experiment. It operates in three distinct stages:</p>
+            
+            <ul class="theory-list" style="margin-left: 1.5rem; margin-bottom: 1.5rem;">
+                <li><strong>Stage 1 (Checkout):</strong> Instructs the agent to pull the latest source code from the <code>main</code> branch of the central GitHub repository into the workspace.</li>
+                <li><strong>Stage 2 (Validate):</strong> Uses Windows Batch commands to ensure <code>index.html</code> and the <code>students/</code> folder exist. If they are missing, it throws an exit code and halts the build to prevent a broken deployment.</li>
+                <li><strong>Stage 3 (Deploy):</strong> Creates the target directory if it doesn't exist and uses <code>xcopy</code> to migrate the validated workspace to the production folder.</li>
+            </ul>
+
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                </div>
+<pre><code>pipeline {
+    agent any
+
+    environment {
+        DEPLOY_DIR = 'C:\\jenkins_site\\'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '--- Stage 1: Checkout ---'
+                git branch: 'main', url: 'https://github.com/yashkumbhoje/exp6-devops.git'
+                echo 'Repository checked out successfully.'
+            }
+        }
+
+        stage('Validate') {
+            steps {
+                echo '--- Stage 2: Validate ---'
+                bat '''
+                    IF NOT EXIST index.html (
+                        echo ERROR: index.html not found!
+                        exit /b 1
+                    ) ELSE (
+                        echo index.html found.
+                    )
+
+                    IF NOT EXIST students (
+                        echo ERROR: students folder not found!
+                        exit /b 1
+                    ) ELSE (
+                        echo students folder found.
+                    )
+
+                    echo Validation passed successfully.
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo '--- Stage 3: Deploy ---'
+                bat '''
+                    IF NOT EXIST C:\\jenkins_site (
+                        mkdir C:\\jenkins_site
+                        echo Created deployment directory C:\\jenkins_site
+                    )
+                    xcopy /E /I /Y "%WORKSPACE%\\*" "C:\\jenkins_site\\"
+                    echo Deployment to C:\\jenkins_site completed successfully.
+                '''
+            }
+        }
+    }
+
+    post {
+        success { echo 'Pipeline completed successfully! Site deployed to C:\\jenkins_site\\' }
+        failure { echo 'Pipeline FAILED. Please check the logs above.' }
+    }
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Jenkins Configuration -->
+        <h2>3. Jenkins Platform Setup</h2>
+        <p>Since each collaborator clones the repository to their own machine, you must configure your local Jenkins instance to listen to the central GitHub repository.</p>
+
+        <div class="card">
+            <ol class="steps">
+                <li>
+                    <strong>Create the Pipeline Job</strong>
+                    <p>Open Jenkins (<code>http://localhost:8080</code>). Click <strong>New Item</strong>, name it <code>exp6-devops</code>, select <strong>Pipeline</strong>, and click OK.</p>
+                </li>
+                <li>
+                    <strong>Configure Automation Triggers</strong>
+                    <p>Under <strong>Build Triggers</strong>, select <strong>Poll SCM</strong> and enter <code>H/5 * * * *</code> to check for GitHub updates every 5 minutes.</p>
+                </li>
+                <li>
+                    <strong>Link the Repository</strong>
+                    <p>Scroll down to the <strong>Pipeline</strong> section. Set Definition to <code>Pipeline script from SCM</code>. Set SCM to <code>Git</code>. Paste the Repository URL: <code>https://github.com/yashkumbhoje/exp6-devops.git</code>, and ensure the Branch Specifier is <code>*/main</code>.</p>
+                </li>
+            </ol>
+        </div>
+
+        <!-- SECTION 4: Host Workflow -->
+        <h2>4. Host Workflow (Project Initialization)</h2>
+        <p>For context, here is how the central repository was initialized and pushed by the host. <em>(Classmates do not need to run these commands).</em></p>
+
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+<pre><code><span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git init
+<span class="cmd-output">Initialized empty Git repository in C:/Users/kumbh/Desktop/exp6-devops/.git/</span>
+
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git remote add origin https://github.com/yashkumbhoje/exp6-devops.git
+
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git add .
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git commit -m "Initial commit: Add exp6-devops multi-student pipeline"
+<span class="cmd-output">[main (root-commit) ca9d6af] Initial commit: Add exp6-devops multi-student pipeline
+ 17 files changed, 1409 insertions(+)</span>
+
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git branch -M main
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git push -u origin main
+<span class="cmd-output">Writing objects: 100% (20/20), 7.48 KiB | 2.49 MiB/s, done.
+To https://github.com/yashkumbhoje/exp6-devops.git
+ * [new branch]      main -> main</span></code></pre>
+        </div>
+
+        <!-- SECTION 5: Classmate Workflow -->
+        <h2>5. Collaborator Workflow (Classmate Perspective)</h2>
+        <p>As a classmate contributing to the lab, you will clone the repository, edit your designated HTML file, and push the changes back. Below is the real-world workflow executed by a collaborator.</p>
+
+        <div class="card">
+            <h3>Step 1: Clone the Repository</h3>
+            <p>Download the project to your local machine.</p>
+            <div class="terminal">
+                <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-prompt">C:\Users\ROHAN\Desktop></span> git clone https://github.com/yashkumbhoje/exp6-devops.git
+<span class="cmd-output">Cloning into 'exp6-devops'...
+Receiving objects: 100% (20/20), 7.48 KiB | 851.00 KiB/s, done.</span>
+
+<span class="cmd-prompt">C:\Users\ROHAN\Desktop></span> cd exp6-devops
+<span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops></span> cd students</code></pre>
+            </div>
+
+            <h3>Step 2: Make Your Contribution</h3>
+            <p>Open your specific roll number file (e.g., <code>117.html</code>), make your edits, and save.</p>
+            <div class="terminal">
+                <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops\students></span> notepad 117.html</code></pre>
+            </div>
+
+            <h3>Step 3: Commit and Push</h3>
+            <p>Navigate back to the root folder, stage your file, and push to trigger Jenkins.</p>
+            <div class="terminal">
+                <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops\students></span> cd ..
+<span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops></span> git status
+<span class="cmd-output">modified:   students/117.html</span>
+
+<span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops></span> git add students/117.html
+<span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops></span> git commit -m "117-changes"
+<span class="cmd-output">[main 6b9c971] 117-changes
+ 1 file changed, 1 insertion(+), 1 deletion(-)</span>
+
+<span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops></span> git push origin main
+<span class="cmd-output">To https://github.com/yashkumbhoje/exp6-devops.git
+   ca9d6af..6b9c971  main -> main</span></code></pre>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>DevOps Laboratory CI/CD Documentation &bull; Built for Exp 6</p>
+    </footer>
+
+</body>
+</html>
