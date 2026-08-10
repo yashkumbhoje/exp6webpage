@@ -18,6 +18,7 @@
             --success: #10b981;
             --success-light: #ecfdf5;
             --warning: #f59e0b;
+            --warning-light: #fffbeb;
             --danger: #ef4444;
             --danger-light: #fef2f2;
             --code-bg: #0f172a;
@@ -94,11 +95,16 @@
             display: flex;
             gap: 1rem;
             border-left: 4px solid;
+            flex-direction: column;
         }
         
         .callout-info { background-color: var(--primary-light); border-color: var(--primary); }
         .callout-info p { color: #1e3a8a; margin: 0; }
         
+        .callout-warning { background-color: var(--warning-light); border-color: var(--warning); }
+        .callout-warning h4 { color: #b45309; margin-bottom: 0.5rem; font-size: 1.05rem;}
+        .callout-warning p { color: #92400e; margin: 0; font-size: 0.95rem; }
+
         /* Terminal & Code */
         .terminal {
             background-color: var(--code-bg);
@@ -145,6 +151,7 @@
         .cmd-prompt { color: #10b981; font-weight: 600; user-select: none; }
         .cmd-path { color: #3b82f6; }
         .cmd-output { color: #94a3b8; }
+        .cmd-comment { color: #64748b; font-style: italic; }
 
         /* Lists */
         ol.steps { counter-reset: step; list-style-type: none; padding: 0; }
@@ -171,14 +178,8 @@
             font-size: 0.9rem;
         }
 
-        ul.theory-list li {
-            margin-bottom: 1rem;
-            color: var(--secondary);
-        }
-        
-        ul.theory-list strong {
-            color: var(--text-main);
-        }
+        ul.theory-list li { margin-bottom: 1rem; color: var(--secondary); }
+        ul.theory-list strong { color: var(--text-main); }
 
         footer {
             text-align: center;
@@ -321,6 +322,9 @@
                     <p>Scroll down to the <strong>Pipeline</strong> section. Set Definition to <code>Pipeline script from SCM</code>. Set SCM to <code>Git</code>. Paste the Repository URL: <code>https://github.com/yashkumbhoje/exp6-devops.git</code>, and ensure the Branch Specifier is <code>*/main</code>.</p>
                 </li>
             </ol>
+            <div class="callout callout-info" style="margin-top: 1rem;">
+                <p><strong>Note on Jenkins Triggers:</strong> Because we set the trigger to <code>H/5 * * * *</code>, Jenkins will automatically build within 5 minutes of any code being pushed. To bypass this wait time during our live lab, you can manually click <strong>Build Now</strong> on the left menu to force an instant deployment.</p>
+            </div>
         </div>
 
         <!-- SECTION 4: Host Workflow -->
@@ -372,8 +376,14 @@ Receiving objects: 100% (20/20), 7.48 KiB | 851.00 KiB/s, done.</span>
 <pre><code><span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops\students></span> notepad 117.html</code></pre>
             </div>
 
-            <h3>Step 3: Commit and Push</h3>
-            <p>Navigate back to the root folder, stage your file, and push to trigger Jenkins.</p>
+            <h3>Step 3: Sync, Commit, and Push</h3>
+            
+            <div class="callout callout-warning">
+                <h4>⚠️ Merge Conflict Prevention (Important)</h4>
+                <p>Because multiple classmates will be pushing code to the central repository at the exact same time during the lab, Git will block your push if someone else pushed a second before you. To fix this, you must run <code>git pull origin main --rebase</code> to merge their latest changes into your laptop before you push your own code.</p>
+            </div>
+
+            <p>Navigate back to the root folder, stage your file, sync with the server, and push to trigger Jenkins.</p>
             <div class="terminal">
                 <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
 <pre><code><span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops\students></span> cd ..
@@ -385,6 +395,11 @@ Receiving objects: 100% (20/20), 7.48 KiB | 851.00 KiB/s, done.</span>
 <span class="cmd-output">[main 6b9c971] 117-changes
  1 file changed, 1 insertion(+), 1 deletion(-)</span>
 
+<span class="cmd-comment"># Pull latest changes from classmates first!</span>
+<span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops></span> git pull origin main --rebase
+<span class="cmd-output">Successfully rebased and updated refs/heads/main.</span>
+
+<span class="cmd-comment"># Now push your code to trigger Jenkins</span>
 <span class="cmd-prompt">C:\Users\ROHAN\Desktop\exp6-devops></span> git push origin main
 <span class="cmd-output">To https://github.com/yashkumbhoje/exp6-devops.git
    ca9d6af..6b9c971  main -> main</span></code></pre>
