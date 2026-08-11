@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevOps Exp 6: CI/CD Pipeline Guide</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2563eb;
@@ -35,7 +35,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Layout */
+        /* Navigation */
         .navbar {
             background-color: var(--bg-surface);
             border-bottom: 1px solid var(--border);
@@ -63,7 +63,7 @@
         h3 { font-size: 1.25rem; font-weight: 600; margin: 2rem 0 1rem; color: var(--primary); }
         p { margin-bottom: 1.25rem; color: var(--secondary); font-size: 1.05rem; }
         
-        /* Components */
+        /* Cards */
         .card {
             background-color: var(--bg-surface);
             border: 1px solid var(--border);
@@ -104,6 +104,31 @@
         .callout-warning { background-color: var(--warning-light); border-color: var(--warning); }
         .callout-warning h4 { color: #b45309; margin-bottom: 0.5rem; font-size: 1.05rem;}
         .callout-warning p { color: #92400e; margin: 0; font-size: 0.95rem; }
+
+        /* Term Definition Block */
+        .term-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .term-item {
+            background: var(--bg-page);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .term-title {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.05rem;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
         /* Terminal & Code */
         .terminal {
@@ -216,7 +241,7 @@
             <p>To write and understand a Jenkins pipeline, you must be familiar with its building blocks:</p>
             <ul class="theory-list" style="margin-left: 1.5rem;">
                 <li><strong>Pipeline:</strong> A user-defined model of a CI/CD process. In our lab, this is written as code in a file named <code>Jenkinsfile</code> using Jenkins Declarative Pipeline syntax.</li>
-                <li><strong>Node / Agent:</strong> A machine or container that connects to the Jenkins master to execute the pipeline tasks. Using <code>agent any</code> instructs Jenkins to allocate any available, capable node to run the build.</li>
+                <li><strong>Node / Agent:</strong> A machine or container that connects to the Jenkins controller to execute the pipeline tasks. Using <code>agent any</code> instructs Jenkins to allocate any available, capable node to run the build.</li>
                 <li><strong>Stage:</strong> A logical block in the pipeline representing a major milestone (e.g., "Checkout", "Validate", "Deploy"). Stages allow us to visualize the pipeline's progress and isolate exactly where a failure occurs.</li>
                 <li><strong>Step:</strong> A single, specific task executed within a stage. For example, running a Windows batch command (<code>bat</code>), printing text (<code>echo</code>), or pulling from a Git repository.</li>
                 <li><strong>Workspace:</strong> A temporary, isolated directory on the agent node where Jenkins downloads the source code and executes the pipeline steps.</li>
@@ -303,53 +328,119 @@
             </div>
         </div>
 
-        <!-- SECTION 3: Jenkins Configuration -->
-        <h2>3. Jenkins Platform Setup</h2>
-        <p>Since each collaborator clones the repository to their own machine, you must configure your local Jenkins instance to listen to the central GitHub repository.</p>
+        <!-- SECTION 3: Jenkins Platform Setup (EXPANDED) -->
+        <h2>3. Jenkins Platform Setup & Parameter Breakdown</h2>
+        <p>To connect your local Jenkins instance to the central GitHub repository, you must create a Pipeline job and configure specific SCM parameters. Below is a detailed breakdown of each setting and why it is chosen.</p>
 
         <div class="card">
+            <h3>Configuration Step-by-Step</h3>
             <ol class="steps">
                 <li>
-                    <strong>Create the Pipeline Job</strong>
-                    <p>Open Jenkins (<code>http://localhost:8080</code>). Click <strong>New Item</strong>, name it <code>exp6-devops</code>, select <strong>Pipeline</strong>, and click OK.</p>
+                    <strong>Create a New Pipeline Item</strong>
+                    <p>Open Jenkins (<code>http://localhost:8080</code>). Click <strong>New Item</strong>, enter the item name as <code>exp6-devops</code>, select <strong>Pipeline</strong> as the project type, and click <strong>OK</strong>.</p>
                 </li>
                 <li>
-                    <strong>Configure Automation Triggers</strong>
-                    <p>Under <strong>Build Triggers</strong>, select <strong>Poll SCM</strong> and enter <code>H/5 * * * *</code> to check for GitHub updates every 5 minutes.</p>
+                    <strong>Configure Build Triggers (Poll SCM)</strong>
+                    <p>In the job configuration page, scroll down to <strong>Build Triggers</strong> and check <strong>Poll SCM</strong>. In the Schedule text area, enter <code>H/5 * * * *</code>.</p>
                 </li>
                 <li>
-                    <strong>Link the Repository</strong>
-                    <p>Scroll down to the <strong>Pipeline</strong> section. Set Definition to <code>Pipeline script from SCM</code>. Set SCM to <code>Git</code>. Paste the Repository URL: <code>https://github.com/yashkumbhoje/exp6-devops.git</code>, and ensure the Branch Specifier is <code>*/main</code>.</p>
+                    <strong>Link Pipeline Script from SCM</strong>
+                    <p>Scroll down to the <strong>Pipeline</strong> section. Set <strong>Definition</strong> to <code>Pipeline script from SCM</code>, set <strong>SCM</strong> to <code>Git</code>, paste the Repository URL <code>https://github.com/yashkumbhoje/exp6-devops.git</code>, set <strong>Branch Specifier</strong> to <code>*/main</code>, and verify <strong>Script Path</strong> is set to <code>Jenkinsfile</code>. Click <strong>Save</strong>.</p>
                 </li>
             </ol>
-            <div class="callout callout-info" style="margin-top: 1rem;">
-                <p><strong>Note on Jenkins Triggers:</strong> Because we set the trigger to <code>H/5 * * * *</code>, Jenkins will automatically build within 5 minutes of any code being pushed. To bypass this wait time during our live lab, you can manually click <strong>Build Now</strong> on the left menu to force an instant deployment.</p>
+
+            <h3 style="margin-top: 2rem;">Detailed Parameter Explanations</h3>
+            <div class="term-grid">
+                <div class="term-item">
+                    <div class="term-title">📌 Pipeline vs. Freestyle Project</div>
+                    <p>Unlike legacy "Freestyle" projects where build steps are configured manually through the Jenkins GUI, a <strong>Pipeline</strong> project uses code (<code>Jenkinsfile</code>) to define all build stages. This provides repeatability, version control, and auditability for our automation workflow (Infrastructure as Code).</p>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-title">📌 Pipeline Script from SCM</div>
+                    <p>This setting instructs Jenkins to fetch the build logic directly from the repository rather than hardcoding Groovy scripts in the Jenkins web console. This separates application logic from deployment execution and ensures any developer can update the pipeline by committing changes to Git.</p>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-title">📌 Poll SCM Syntax: H/5 * * * *</div>
+                    <p>Poll SCM configures Jenkins to periodically inspect the remote Git repository for new commits without requiring external webhooks or tunnels (like Ngrok). The syntax follows Cron expression formatting:</p>
+                    <ul style="margin-left: 1.25rem; font-size: 0.95rem; color: var(--secondary);">
+                        <li><code>H/5</code>: Evaluates every 5 minutes. The <code>H</code> (Hash) symbol balances system load by distributing polling execution across different jobs.</li>
+                        <li><code>* * * *</code>: Represents (Hour, Day of Month, Month, Day of Week), ensuring the polling loop runs continuously 24/7.</li>
+                    </ul>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-title">📌 Branch Specifier: */main</div>
+                    <p>Defines which target branch Jenkins monitors for incoming changes. Specifying <code>*/main</code> ensures Jenkins ignores experimental development branches and triggers deployment pipelines strictly when commits land on the primary production branch.</p>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-title">📌 Script Path: Jenkinsfile</div>
+                    <p>Specifies the relative file path within the root repository directory where the pipeline definition resides. Jenkins reads this exact file upon checking out the repository to execute the declared stages.</p>
+                </div>
             </div>
         </div>
 
-        <!-- SECTION 4: Host Workflow -->
-        <h2>4. Host Workflow (Project Initialization)</h2>
-        <p>For context, here is how the central repository was initialized and pushed by the host. <em>(Classmates do not need to run these commands).</em></p>
+        <!-- SECTION 4: Host Workflow (GENERALIZED & EDUCATIONAL) -->
+        <h2>4. Host Workflow (Project Initialization & Maintenance)</h2>
+        <p>The host machine initializes the central repository structure and manages updates to templates and shared resources. Below are the core Git concepts and commands used to maintain remote state and handle concurrent updates.</p>
 
-        <div class="terminal">
-            <div class="terminal-header">
-                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
-            </div>
-<pre><code><span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git init
-<span class="cmd-output">Initialized empty Git repository in C:/Users/kumbh/Desktop/exp6-devops/.git/</span>
+        <div class="card">
+            <h3>Understanding Host Git Commands & Purpose</h3>
 
-<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git remote add origin https://github.com/yashkumbhoje/exp6-devops.git
+            <div class="term-grid">
+                <div class="term-item">
+                    <div class="term-title">1. Repository Initialization & Remote Linking</div>
+                    <p>Before files can be version-controlled, a local Git database must be initialized and linked to a central remote hosting platform (GitHub).</p>
+                    <div class="terminal">
+                        <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-comment"># Initialize local .git database</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git init
 
+<span class="cmd-comment"># Link local repo to central GitHub origin</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git remote add origin https://github.com/yashkumbhoje/exp6-devops.git</code></pre>
+                    </div>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-title">2. Staging Untracked Files, Deletions, and Updates</div>
+                    <p>Executing <code>git add .</code> recursively inspects the current directory to stage modified files, newly created templates (untracked), and deleted files into the Git staging area before committing.</p>
+                    <div class="terminal">
+                        <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-comment"># Inspect working tree state</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git status
+
+<span class="cmd-comment"># Stage all additions, deletions, and updates</span>
 <span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git add .
-<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git commit -m "Initial commit: Add exp6-devops multi-student pipeline"
-<span class="cmd-output">[main (root-commit) ca9d6af] Initial commit: Add exp6-devops multi-student pipeline
- 17 files changed, 1409 insertions(+)</span>
 
-<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git branch -M main
-<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git push -u origin main
-<span class="cmd-output">Writing objects: 100% (20/20), 7.48 KiB | 2.49 MiB/s, done.
-To https://github.com/yashkumbhoje/exp6-devops.git
- * [new branch]      main -> main</span></code></pre>
+<span class="cmd-comment"># Create a local commit snapshot</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git commit -m "Chore: Add remaining student HTML templates"</code></pre>
+                    </div>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-title">3. Synchronizing Concurrent Changes via Rebase</div>
+                    <p>When collaborators push code to GitHub concurrently, your local repository can fall behind remote state. GitHub rejects direct pushes with a <code>! [rejected] main -> main (fetch first)</code> error to prevent overwriting existing commits.</p>
+                    <p>Running <code>git pull origin main --rebase</code> fetches the latest remote changes and reapplies local commits on top of the remote history, maintaining a clean, linear commit log.</p>
+                    <div class="terminal">
+                        <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-comment"># Attempt push (rejected if remote contains newer commits)</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git push origin main
+<span class="cmd-output">! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'https://github.com/yashkumbhoje/exp6-devops.git'</span>
+
+<span class="cmd-comment"># Fetch remote updates and reapply local commits on top</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git pull origin main --rebase
+<span class="cmd-output">Successfully rebased and updated refs/heads/main.</span>
+
+<span class="cmd-comment"># Push updated commits to remote repository</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-devops></span> git push origin main
+<span class="cmd-output">To https://github.com/yashkumbhoje/exp6-devops.git
+   6b9c971..ce8678f  main -> main</span></code></pre>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- SECTION 5: Classmate Workflow -->
