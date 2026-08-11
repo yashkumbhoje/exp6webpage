@@ -418,8 +418,54 @@ pipeline {
             </div>
         </div>
 
-        <!-- SECTION 4: Host Workflow -->
-        <h2>4. Host Workflow (Project Initialization & Maintenance)</h2>
+        <!-- SECTION 4: Setting Up a New Jenkins Project from Scratch (exp6-trial1) -->
+        <h2>4. Setting Up a New Project for Jenkins from Scratch (`exp6-trial1`)</h2>
+        <p>To demonstrate building an automated pipeline project from the ground up, we initialize a new repository named <code>exp6-trial1</code>, create the workspace structure, add baseline files, and push to GitHub.</p>
+
+        <div class="card">
+            <h3>Step 1: Create Local Directory & Files via Command Prompt</h3>
+            <p>Open your command line interface and run the following commands to provision the project workspace and subfolders:</p>
+            <div class="terminal">
+                <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-comment">:: 1. Navigate to Desktop and create project directory</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop></span> cd C:\Users\kumbh\Desktop
+<span class="cmd-prompt">C:\Users\kumbh\Desktop></span> mkdir exp6-trial1
+<span class="cmd-prompt">C:\Users\kumbh\Desktop></span> cd exp6-trial1
+
+<span class="cmd-comment">:: 2. Create students subdirectory for team contributions</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> mkdir students
+
+<span class="cmd-comment">:: 3. Generate empty baseline files</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> type nul > index.html
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> type nul > Jenkinsfile</code></pre>
+            </div>
+
+            <h3>Step 2: Initialize Git and Link to GitHub</h3>
+            <p>Bind your local repository directory to the newly created remote repository on GitHub (`exp6-trial1`):</p>
+            <div class="terminal">
+                <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-comment">:: 1. Initialize local Git repository</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git init
+
+<span class="cmd-comment">:: 2. Set primary branch name to main</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git branch -M main
+
+<span class="cmd-comment">:: 3. Link remote GitHub repository</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git remote add origin https://github.com/yashkumbhoje/exp6-trial1.git
+
+<span class="cmd-comment">:: 4. Stage all files</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git add .
+
+<span class="cmd-comment">:: 5. Commit baseline files</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git commit -m "Initial commit: exp6-trial1 pipeline setup"
+
+<span class="cmd-comment">:: 6. Push code to GitHub</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git push -u origin main</code></pre>
+            </div>
+        </div>
+
+        <!-- SECTION 5: Host Workflow -->
+        <h2>5. Host Workflow (Project Initialization & Maintenance)</h2>
         <p>The host machine initializes the central repository structure and manages updates to templates and shared resources. Below are the core Git concepts and commands used to maintain remote state and handle concurrent updates.</p>
 
         <div class="card">
@@ -479,8 +525,8 @@ error: failed to push some refs to 'https://github.com/yashkumbhoje/exp6-devops.
             </div>
         </div>
 
-        <!-- SECTION 5: Classmate Workflow -->
-        <h2>5. Collaborator Workflow (Classmate Perspective)</h2>
+        <!-- SECTION 6: Classmate Workflow -->
+        <h2>6. Collaborator Workflow (Classmate Perspective)</h2>
         <p>As a classmate contributing to the lab, you will clone the repository, edit your designated HTML file, and push the changes back. Below is the real-world workflow executed by a collaborator.</p>
 
         <div class="card">
