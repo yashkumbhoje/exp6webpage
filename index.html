@@ -254,7 +254,7 @@
         
         <div class="card">
             <h3>Understanding our Jenkinsfile</h3>
-            <p>The entire automation process is defined as code. Below is the fully commented <code>Jenkinsfile</code> driving our lab experiment. It operates in three distinct stages:</p>
+            <p>The entire automation process is defined as code. Below is the exact <code>Jenkinsfile</code> driving our lab experiment. It operates in three distinct stages:</p>
             
             <ul class="theory-list" style="margin-left: 1.5rem; margin-bottom: 1.5rem;">
                 <li><strong>Stage 1 (Checkout):</strong> Instructs the agent to pull the latest source code from the <code>main</code> branch of the central GitHub repository into the workspace.</li>
@@ -266,51 +266,34 @@
                 <div class="terminal-header">
                     <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
                 </div>
-<pre><code>// Pipeline Directive: The root block defining the entire automated CI/CD workflow using Declarative Pipeline syntax (Infrastructure as Code - IaC).
-pipeline {
-
-    // Agent Directive: Instructs Jenkins to execute this pipeline on any available executor node/agent connected to the master server.
+<pre><code>pipeline {
     agent any
 
-    // Environment Block: Defines global environment variables accessible across all stages, steps, and scripts.
     environment {
         DEPLOY_DIR = 'C:\\jenkins_site\\'
     }
 
-    // Stages Block: Contains a sequence of one or more 'stage' definitions representing major milestones in the CI/CD lifecycle.
     stages {
 
-        // STAGE 1: Source Code Management (SCM) Checkout
-        // Objective: Fetch the latest committed code from the remote Version Control System (VCS) into the local Jenkins workspace.
         stage('Checkout') {
             steps {
                 echo '--- Stage 1: Checkout ---'
-                
-                // Git Step: Clones the 'main' branch from the specified GitHub repository URL into the agent's %WORKSPACE% directory.
                 git branch: 'main', url: 'https://github.com/yashkumbhoje/exp6-devops.git'
-                
                 echo 'Repository checked out successfully.'
             }
         }
 
-        // STAGE 2: Quality Gate & Asset Validation
-        // Objective: Perform static checks on workspace files to ensure critical assets exist before attempting deployment.
         stage('Validate') {
             steps {
                 echo '--- Stage 2: Validate ---'
-                
-                // bat Step: Spawns a Windows Command Prompt (cmd.exe) process to run multi-line Batch script statements.
                 bat '''
-                    :: Check if the primary HTML dashboard exists in the current workspace
                     IF NOT EXIST index.html (
                         echo ERROR: index.html not found!
-                        :: exit /b 1 throws a non-zero exit code to fail the stage and halt pipeline execution
                         exit /b 1
                     ) ELSE (
                         echo index.html found.
                     )
 
-                    :: Check if the required student templates directory exists
                     IF NOT EXIST students (
                         echo ERROR: students folder not found!
                         exit /b 1
@@ -323,41 +306,27 @@ pipeline {
             }
         }
 
-        // STAGE 3: Continuous Deployment (CD)
-        // Objective: Copy validated assets from the temporary Jenkins %WORKSPACE% to the target production web server folder.
         stage('Deploy') {
             steps {
                 echo '--- Stage 3: Deploy ---'
-                
                 bat '''
-                    :: Verify whether the destination directory exists; if not, create it
                     IF NOT EXIST C:\\jenkins_site (
                         mkdir C:\\jenkins_site
                         echo Created deployment directory C:\\jenkins_site
                     )
-                    
-                    :: xcopy parameters:
-                    :: /E = Copies all subdirectories, including empty ones
-                    :: /I = Assumes target is a directory if destination does not exist
-                    :: /Y = Suppresses prompts confirming overwrite of existing destination files
                     xcopy /E /I /Y "%WORKSPACE%\\*" "C:\\jenkins_site\\"
-                    
                     echo Deployment to C:\\jenkins_site completed successfully.
                 '''
             }
         }
     }
 
-    // Post-Execution Block: Defines actions executed conditionally after all pipeline stages complete.
     post {
-        // Runs only if every stage in the pipeline completes successfully
-        success { 
-            echo 'Pipeline completed successfully! Site deployed to C:\\jenkins_site\\' 
+        success {
+            echo 'Pipeline completed successfully! Site deployed to C:\\jenkins_site\\'
         }
-        
-        // Runs if any stage fails or exits with an error code (e.g., validation failure)
-        failure { 
-            echo 'Pipeline FAILED. Please check the logs above.' 
+        failure {
+            echo 'Pipeline FAILED. Please check the logs above.'
         }
     }
 }</code></pre>
@@ -420,7 +389,7 @@ pipeline {
 
         <!-- SECTION 4: Setting Up a New Jenkins Project from Scratch (exp6-trial1) -->
         <h2>4. Setting Up a New Project for Jenkins from Scratch (`exp6-trial1`)</h2>
-        <p>To demonstrate building an automated pipeline project from the ground up, we initialize a new repository named <code>exp6-trial1</code>, create the workspace structure, add baseline files, and push to GitHub.</p>
+        <p>To demonstrate building an automated pipeline project from the ground up, we initialize a new repository named <code>exp6-trial1</code>, create the workspace structure, add baseline files, push to GitHub, and link it inside the Jenkins Dashboard UI.</p>
 
         <div class="card">
             <h3>Step 1: Create Local Directory & Files via Command Prompt</h3>
@@ -462,6 +431,34 @@ pipeline {
 <span class="cmd-comment">:: 6. Push code to GitHub</span>
 <span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git push -u origin main</code></pre>
             </div>
+
+            <h3>Step 3: Create & Configure the Pipeline Job in Jenkins UI</h3>
+            <p>Once the repository is pushed to GitHub, set up the corresponding automated job inside the local Jenkins Web Dashboard:</p>
+            <ol class="steps">
+                <li>
+                    <strong>Create the Job:</strong>
+                    <p>Open <code>http://localhost:8080</code> in your web browser. Click <strong>New Item</strong> on the left navigation panel. Enter the item name as <code>exp6-trial1</code>, select <strong>Pipeline</strong>, and click <strong>OK</strong>.</p>
+                </li>
+                <li>
+                    <strong>Configure Automated Polling:</strong>
+                    <p>Scroll down to the <strong>Build Triggers</strong> section, check the box for <strong>Poll SCM</strong>, and enter <code>H/5 * * * *</code> in the Schedule box.</p>
+                </li>
+                <li>
+                    <strong>Connect SCM & Jenkinsfile:</strong>
+                    <p>Scroll down to the <strong>Pipeline</strong> section and configure the following parameters:</p>
+                    <ul style="margin-left: 1.25rem; font-size: 0.95rem; color: var(--secondary); margin-bottom: 1rem;">
+                        <li><strong>Definition:</strong> <code>Pipeline script from SCM</code></li>
+                        <li><strong>SCM:</strong> <code>Git</code></li>
+                        <li><strong>Repository URL:</strong> <code>https://github.com/yashkumbhoje/exp6-trial1.git</code></li>
+                        <li><strong>Branch Specifier:</strong> <code>*/main</code></li>
+                        <li><strong>Script Path:</strong> <code>Jenkinsfile</code></li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Save & Run Baseline Build:</strong>
+                    <p>Click <strong>Save</strong> at the bottom. On the job dashboard, click <strong>Build Now</strong> to trigger your baseline build and verify deployment to <code>C:\jenkins_site\</code>.</p>
+                </li>
+            </ol>
         </div>
 
         <!-- SECTION 5: Host Workflow -->
