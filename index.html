@@ -389,11 +389,88 @@
 
         <!-- SECTION 4: Setting Up a New Jenkins Project from Scratch (exp6-trial1) -->
         <h2>4. Setting Up a New Project for Jenkins from Scratch (`exp6-trial1`)</h2>
-        <p>To demonstrate building an automated pipeline project from the ground up, we initialize a new repository named <code>exp6-trial1</code>, create the workspace structure, add baseline files, push to GitHub, and link it inside the Jenkins Dashboard UI.</p>
+        <p>To demonstrate building an automated pipeline project from the ground up, we initialize a new repository named <code>exp6-trial1</code>, create the required baseline files (<code>trial.txt</code> and <code>Jenkinsfile</code>), push to GitHub, and link it inside the Jenkins Dashboard UI. Unlike <code>exp6-devops</code>, this project does <strong>not</strong> use a <code>students/</code> folder or an <code>index.html</code> — its pipeline validates only <code>trial.txt</code> and the <code>Jenkinsfile</code> itself.</p>
 
         <div class="card">
-            <h3>Step 1: Create Local Directory & Files via Command Prompt</h3>
-            <p>Open your command line interface and run the following commands to provision the project workspace and subfolders:</p>
+            <h3>The <code>exp6-trial1</code> Jenkinsfile</h3>
+            <p>This is the exact pipeline definition used for the <code>exp6-trial1</code> project. It checks out the repo, validates that <code>trial.txt</code> and <code>Jenkinsfile</code> exist, then deploys the workspace to <code>C:\jenkins_site\</code>.</p>
+            <ul class="theory-list" style="margin-left: 1.5rem; margin-bottom: 1.5rem;">
+                <li><strong>Stage 1 (Checkout):</strong> Pulls the latest source code from the <code>main</code> branch of <code>exp6-trial1</code> on GitHub into the Jenkins workspace.</li>
+                <li><strong>Stage 2 (Validate):</strong> Uses Windows Batch commands to verify that <code>trial.txt</code> and <code>Jenkinsfile</code> are present. If either is missing, the build exits with an error code to prevent a broken deployment.</li>
+                <li><strong>Stage 3 (Deploy):</strong> Creates the target directory if it doesn't exist and uses <code>xcopy</code> to copy the validated workspace to the production folder.</li>
+            </ul>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                </div>
+<pre><code>pipeline {
+    agent any
+
+    environment {
+        DEPLOY_DIR = 'C:\\jenkins_site\\'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo '--- Stage 1: Checkout ---'
+                git branch: 'main', url: 'https://github.com/yashkumbhoje/exp6-trial1.git'
+                echo 'Repository checked out successfully.'
+            }
+        }
+
+        stage('Validate') {
+            steps {
+                echo '--- Stage 2: Validate ---'
+                bat '''
+                    IF NOT EXIST trial.txt (
+                        echo ERROR: trial.txt not found!
+                        exit /b 1
+                    ) ELSE (
+                        echo trial.txt found.
+                    )
+
+                    IF NOT EXIST Jenkinsfile (
+                        echo ERROR: Jenkinsfile not found!
+                        exit /b 1
+                    ) ELSE (
+                        echo Jenkinsfile found.
+                    )
+
+                    echo Validation passed successfully.
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo '--- Stage 3: Deploy ---'
+                bat '''
+                    IF NOT EXIST C:\\jenkins_site (
+                        mkdir C:\\jenkins_site
+                        echo Created deployment directory C:\\jenkins_site
+                    )
+                    xcopy /E /I /Y "%WORKSPACE%\\*" "C:\\jenkins_site\\"
+                    echo Deployment to C:\\jenkins_site completed successfully.
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully! Site deployed to C:\\jenkins_site\\'
+        }
+        failure {
+            echo 'Pipeline FAILED. Please check the logs above.'
+        }
+    }
+}</code></pre>
+            </div>
+         <div class="card">
+            <h3>Step 1: Create Local Directory &amp; Files via Command Prompt</h3>
+            <p>Open your command line interface and run the following commands to create the project folder and its two required files — <code>trial.txt</code> and <code>Jenkinsfile</code>. There is no <code>students/</code> subfolder or <code>index.html</code> in this project.</p>
             <div class="terminal">
                 <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
 <pre><code><span class="cmd-comment">:: 1. Navigate to Desktop and create project directory</span>
@@ -401,13 +478,13 @@
 <span class="cmd-prompt">C:\Users\kumbh\Desktop></span> mkdir exp6-trial1
 <span class="cmd-prompt">C:\Users\kumbh\Desktop></span> cd exp6-trial1
 
-<span class="cmd-comment">:: 2. Create students subdirectory for team contributions</span>
-<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> mkdir students
-
-<span class="cmd-comment">:: 3. Generate empty baseline files</span>
-<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> type nul > index.html
+<span class="cmd-comment">:: 2. Generate the two required baseline files</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> type nul > trial.txt
 <span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> type nul > Jenkinsfile</code></pre>
             </div>
+        </div>
+
+        <div class="card">
 
             <h3>Step 2: Initialize Git and Link to GitHub</h3>
             <p>Bind your local repository directory to the newly created remote repository on GitHub (`exp6-trial1`):</p>
