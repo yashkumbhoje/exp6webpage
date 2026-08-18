@@ -540,6 +540,52 @@
             </ol>
         </div>
 
+        <div class="card">
+            <h3>Step 4: Make a Change to <code>trial.txt</code> &amp; Trigger the Pipeline</h3>
+            <p>With Jenkins now watching the repository, any push to the <code>main</code> branch will automatically trigger the pipeline. Here is how to make a change to <code>trial.txt</code> and push it to GitHub to verify the full CI/CD flow.</p>
+
+            <h3>Open &amp; Edit the File</h3>
+            <p>Navigate to the project folder and open <code>trial.txt</code> in Notepad, make your changes, and save the file.</p>
+            <div class="terminal">
+                <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> notepad trial.txt</code></pre>
+            </div>
+
+            <h3>Commit &amp; Push to Trigger Jenkins</h3>
+
+            <div class="callout callout-warning">
+                <h4>⚠️ Always Pull Before You Push</h4>
+                <p>If Jenkins or any other source may have modified the remote, run <code>git pull origin main --rebase</code> before pushing to avoid a rejected push error.</p>
+            </div>
+
+            <p>Stage the modified file, commit it, sync with the remote, and push to trigger the automated pipeline:</p>
+            <div class="terminal">
+                <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+<pre><code><span class="cmd-comment">:: 1. Check what changed</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git status
+<span class="cmd-output">modified:   trial.txt</span>
+
+<span class="cmd-comment">:: 2. Stage the modified file</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git add trial.txt
+
+<span class="cmd-comment">:: 3. Commit the change</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git commit -m "Updated trial.txt"
+<span class="cmd-output">[main a1b2c3d] Updated trial.txt
+ 1 file changed, 1 insertion(+), 1 deletion(-)</span>
+
+<span class="cmd-comment">:: 4. Pull latest remote state before pushing</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git pull origin main --rebase
+<span class="cmd-output">Successfully rebased and updated refs/heads/main.</span>
+
+<span class="cmd-comment">:: 5. Push to GitHub — Jenkins will detect this and run the pipeline</span>
+<span class="cmd-prompt">C:\Users\kumbh\Desktop\exp6-trial1></span> git push origin main
+<span class="cmd-output">To https://github.com/yashkumbhoje/exp6-trial1.git
+   f3e9a12..a1b2c3d  main -> main</span></code></pre>
+            </div>
+
+            <p>Once the push lands on GitHub, Jenkins will detect the new commit within 5 minutes (Poll SCM interval) and automatically trigger the <strong>Checkout → Validate → Deploy</strong> pipeline for <code>exp6-trial1</code>.</p>
+        </div>
+
         <!-- SECTION 5: Host Workflow -->
         <h2>5. Host Workflow (Project Initialization & Maintenance)</h2>
         <p>The host machine initializes the central repository structure and manages updates to templates and shared resources. Below are the core Git concepts and commands used to maintain remote state and handle concurrent updates.</p>
